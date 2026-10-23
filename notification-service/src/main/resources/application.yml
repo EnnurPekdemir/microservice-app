@@ -1,0 +1,31 @@
+server:
+  port: 8086
+
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  cloud:
+    function:
+      definition: notificationConsumer
+    stream:
+      bindings:
+        notificationConsumer-in-0:
+          destination: notification-topic
+          group: notification-service-group
+          contentType: application/json
+      rabbit:
+        bindings:
+          notificationConsumer-in-0:
+            consumer:
+              auto-bind-dlq: true
+              republish-to-dlq: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8500/eureka/}
+  instance:
+    prefer-ip-address: true

@@ -10,16 +10,16 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 @EnableCassandraRepositories(basePackages = {"com.haydikodlayalim.accountservice.repository"})
 public class CassandraConfiguration extends AbstractCassandraConfiguration {
 
-    @Value("${spring.data.cassandra.keyspace-name}")
+    @Value("${spring.data.cassandra.keyspace-name:haydikodlayalim}")
     private String keyspaceName;
 
-    @Value("${spring.data.cassandra.contact-points}")
+    @Value("${spring.data.cassandra.contact-points:127.0.0.1}")
     private String contactPoints;
 
-    @Value("${spring.data.cassandra.port}")
+    @Value("${spring.data.cassandra.port:9042}")
     private int port;
 
-    @Value("${spring.data.cassandra.local-datacenter}")
+    @Value("${spring.data.cassandra.local-datacenter:datacenter1}")
     private String localDataCenter;
 
     @Override

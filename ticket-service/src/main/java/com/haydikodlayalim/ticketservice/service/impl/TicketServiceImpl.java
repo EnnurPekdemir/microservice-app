@@ -3,6 +3,7 @@ package com.haydikodlayalim.ticketservice.service.impl;
 import com.haydikodlayalim.ticketservice.client.AccountServiceClient;
 import com.haydikodlayalim.ticketservice.client.dto.AccountDto;
 import com.haydikodlayalim.ticketservice.dto.TicketDto;
+import com.haydikodlayalim.ticketservice.messaging.TicketNotificationService;
 import com.haydikodlayalim.ticketservice.model.PriorityType;
 import com.haydikodlayalim.ticketservice.model.Ticket;
 import com.haydikodlayalim.ticketservice.model.TicketStatus;
@@ -30,6 +31,7 @@ public class TicketServiceImpl implements TicketService {
     private final TicketElasticRepository ticketElasticRepository;
     private final AccountServiceClient accountServiceClient;
     private final ModelMapper modelMapper;
+    private final TicketNotificationService ticketNotificationService;
 
     @Override
     @Transactional
@@ -67,6 +69,8 @@ public class TicketServiceImpl implements TicketService {
         ticketDto.setTicketStatus(ticket.getTicketStatus());
 
         enrichAssigneeDetails(ticketDto, ticket.getAssignee());
+
+        ticketNotificationService.sendTicketCreatedNotification(ticket.getId(), ticket.getAssignee(), ticket.getDescription());
 
         return ticketDto;
     }

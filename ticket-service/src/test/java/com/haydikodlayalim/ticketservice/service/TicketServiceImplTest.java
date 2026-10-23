@@ -3,6 +3,7 @@ package com.haydikodlayalim.ticketservice.service;
 import com.haydikodlayalim.ticketservice.client.AccountServiceClient;
 import com.haydikodlayalim.ticketservice.client.dto.AccountDto;
 import com.haydikodlayalim.ticketservice.dto.TicketDto;
+import com.haydikodlayalim.ticketservice.messaging.TicketNotificationService;
 import com.haydikodlayalim.ticketservice.model.PriorityType;
 import com.haydikodlayalim.ticketservice.model.Ticket;
 import com.haydikodlayalim.ticketservice.model.TicketStatus;
@@ -46,6 +47,9 @@ class TicketServiceImplTest {
 
     @Mock
     private AccountServiceClient accountServiceClient;
+
+    @Mock
+    private TicketNotificationService ticketNotificationService;
 
     @Spy
     private ModelMapper modelMapper = new ModelMapper();
@@ -100,6 +104,7 @@ class TicketServiceImplTest {
 
         verify(ticketRepository).save(any(Ticket.class));
         verify(ticketElasticRepository).save(any(TicketModel.class));
+        verify(ticketNotificationService).sendTicketCreatedNotification("ticket-123", "account-1", "Sample ticket description");
     }
 
     @Test
