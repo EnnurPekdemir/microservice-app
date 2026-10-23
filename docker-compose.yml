@@ -1,0 +1,71 @@
+version: '3.8'
+
+networks:
+  microservice-network:
+    driver: bridge
+
+volumes:
+  cassandra_data:
+  es_data:
+  mysql_data:
+
+services:
+  
+  cassandra-db:
+    image: cassandra:latest
+    container_name: cassandra-db
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=Test Cluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    networks:
+      - microservice-network
+    restart: always
+
+  cassandra-web:
+    image: ipushc/cassandra-web:latest
+    container_name: cassandra-web
+    ports:
+      - "3000:8083"
+    environment:
+      - CASSANDRA_HOST=cassandra-db
+      - CASSANDRA_PORT=9042
+    depends_on:
+      - cassandra-db
+    networks:
+      - microservice-network
+    restart: always
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - microservice-network
+    restart: always
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=ticket_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - microservice-network
+    restart: always
