@@ -7,6 +7,12 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
+  zipkin:
+    base-url: ${ZIPKIN_URL:http://localhost:9411}
+    enabled: ${ZIPKIN_ENABLED:true}
+  sleuth:
+    sampler:
+      probability: 1.0
   cloud:
     function:
       definition: notificationConsumer
