@@ -91,3 +91,116 @@ services:
     networks:
       - microservice-network
     restart: always
+
+  # ==============================================================================
+  # Platform & Infrastructure Microservices
+  # ==============================================================================
+  config-server:
+    build: ./config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - microservice-network
+    restart: always
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8500:8500"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+    depends_on:
+      - config-server
+    networks:
+      - microservice-network
+    restart: always
+
+  admin-server:
+    build: ./admin-server
+    container_name: admin-server
+    ports:
+      - "8095:8095"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://eureka-server:8500/eureka/
+      - ZIPKIN_URL=http://zipkin:9411
+    depends_on:
+      - eureka-server
+    networks:
+      - microservice-network
+    restart: always
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://eureka-server:8500/eureka/
+      - ZIPKIN_URL=http://zipkin:9411
+    depends_on:
+      - eureka-server
+    networks:
+      - microservice-network
+    restart: always
+
+  # ==============================================================================
+  # Business Microservices
+  # ==============================================================================
+  account-service:
+    build: ./account-service
+    container_name: account-service
+    ports:
+      - "8080:8080"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://eureka-server:8500/eureka/
+      - ZIPKIN_URL=http://zipkin:9411
+      - CASSANDRA_CONTACT_POINTS=cassandra-db
+    depends_on:
+      - cassandra-db
+      - eureka-server
+    networks:
+      - microservice-network
+    restart: always
+
+  ticket-service:
+    build: ./ticket-service
+    container_name: ticket-service
+    ports:
+      - "8085:8085"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://eureka-server:8500/eureka/
+      - ZIPKIN_URL=http://zipkin:9411
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/ticket_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - mysql-db
+      - elasticsearch
+      - rabbitmq
+      - eureka-server
+    networks:
+      - microservice-network
+    restart: always
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8086:8086"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://eureka-server:8500/eureka/
+      - ZIPKIN_URL=http://zipkin:9411
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+      - eureka-server
+    networks:
+      - microservice-network
+    restart: always
